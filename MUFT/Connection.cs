@@ -81,23 +81,3 @@ namespace MUFT
         }
     }
 }
-//string src_path = @"C:\Users\Sehnsucht\Desktop\StreamTest\Original.txt";
-//string dst_path = @"C:\Users\Sehnsucht\Desktop\StreamTest\Copy.txt";
-
-//BinaryReader src_br = new BinaryReader(File.OpenRead(src_path));
-//BinaryWriter dst_br = new BinaryWriter(File.OpenWrite(dst_path));
-
-//Byte[] bytes = new Byte[chunk_size];
-//int bytes_total = 0;
-//int bytes_read = 0;
-
-//do
-//{
-//    bytes_read = src_br.Read(bytes, 0, chunk_size); // Read bytes
-//    dst_br.Write(bytes, 0, bytes_read); // Write bytes
-//    bytes_total += bytes_read;
-//} while (bytes_read != 0);
-
-
-//src_br.Close();
-//dst_br.Close();
