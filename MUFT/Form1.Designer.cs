@@ -44,6 +44,8 @@
             this.currentFileGroup = new System.Windows.Forms.GroupBox();
             this.totalFilesGroup = new System.Windows.Forms.GroupBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.sizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel1.SuspendLayout();
             this.networkGroup.SuspendLayout();
             this.filesGroup.SuspendLayout();
@@ -155,9 +157,12 @@
             // 
             this.fileList.AllowDrop = true;
             this.fileList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.pathHeader});
+            this.statusHeader,
+            this.pathHeader,
+            this.sizeHeader});
             this.fileList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.fileList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.fileList.FullRowSelect = true;
+            this.fileList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.fileList.LabelEdit = true;
             this.fileList.Location = new System.Drawing.Point(3, 16);
             this.fileList.Name = "fileList";
@@ -169,8 +174,8 @@
             // 
             // pathHeader
             // 
-            this.pathHeader.Text = "";
-            this.pathHeader.Width = 426;
+            this.pathHeader.Text = "File";
+            this.pathHeader.Width = 368;
             // 
             // totalProgress
             // 
@@ -211,6 +216,16 @@
             this.progressBar1.Size = new System.Drawing.Size(439, 23);
             this.progressBar1.Step = 1;
             this.progressBar1.TabIndex = 9;
+            // 
+            // statusHeader
+            // 
+            this.statusHeader.Text = "S";
+            this.statusHeader.Width = 25;
+            // 
+            // sizeHeader
+            // 
+            this.sizeHeader.Text = "Size";
+            this.sizeHeader.Width = 50;
             // 
             // MainForm
             // 
@@ -255,5 +270,7 @@
         private System.Windows.Forms.GroupBox currentFileGroup;
         private System.Windows.Forms.GroupBox totalFilesGroup;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ColumnHeader statusHeader;
+        private System.Windows.Forms.ColumnHeader sizeHeader;
     }
 }

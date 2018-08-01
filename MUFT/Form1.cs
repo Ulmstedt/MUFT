@@ -53,8 +53,11 @@ namespace MUFT
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            fileList.Items.Add("Test 1");
-            fileList.Items.Add("Test 2");
+            ListViewItem item = new ListViewItem();
+            item.Text = "X"; // Status
+            item.SubItems.Add("Test 1");
+            item.SubItems.Add("32 KB");
+            fileList.Items.Add(item);
         }
 
         private void fileList_DragEnter(object sender, DragEventArgs e)
@@ -76,7 +79,11 @@ namespace MUFT
                 string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach(string path in filePaths)
                 {
-                    fileList.Items.Add(path);
+                    ListViewItem item = new ListViewItem();
+                    item.Text = "X"; // Status
+                    item.SubItems.Add(path);
+                    item.SubItems.Add("32 KB");
+                    fileList.Items.Add(item);
                 }
             }
         }
