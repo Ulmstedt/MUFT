@@ -1,35 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace MUFT
 {
     public partial class MainForm : Form
     {
+        private List<SimpleFileInfo> fileList;
+        private int numFiles = 0;
+        private long totalSize = 0;
+
         public MainForm()
         {
+            fileList = new List<SimpleFileInfo>();
             InitializeComponent();
+        }
+
+        private void UpdateTotalSize()
+        {
+            totalFilesGroup.Text = "Total (0 / " + SimpleFileInfo.SizeToString(totalSize) + ")";
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             // Drag and drop files into list view
-            fileList.DragEnter += fileList_DragEnter;
-            fileList.DragDrop += fileList_DragDrop;
+            fileListView.DragEnter += fileListView_DragEnter;
+            fileListView.DragDrop += fileListView_DragDrop;
 
-            // Delete file with del
-            fileList.KeyDown += fileList_KeyDown;
+            // Delete file entries with del
+            fileListView.KeyDown += fileListView_KeyDown;
+
+            //fileListView.ColumnWidthChanging += fileListView_ColumnWidthChanging;
 
             // ToolTips
             ToolTip filesToolTip = new ToolTip();
             filesToolTip.ShowAlways = true;
-            filesToolTip.SetToolTip(fileList, "Drag-and-drop to add files.");
+            filesToolTip.SetToolTip(fileListView, "Drag-and-drop to add files.");
 
             ToolTip IPToolTip = new ToolTip();
             IPToolTip.ShowAlways = true;
@@ -38,6 +45,9 @@ namespace MUFT
             ToolTip portToolTip = new ToolTip();
             portToolTip.ShowAlways = true;
             portToolTip.SetToolTip(portTextBox, "Port of the server.");
+
+            // Reduce width of listView in order to eliminate horizontal scroll bar
+            //fileListView.Columns[1].Width -= (4 + SystemInformation.VerticalScrollBarWidth);
         }
 
 
@@ -53,16 +63,34 @@ namespace MUFT
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            ListViewItem item = new ListViewItem();
-            item.Text = "X"; // Status
-            item.SubItems.Add("Test 1");
-            item.SubItems.Add("32 KB");
-            fileList.Items.Add(item);
+            FileTransferConnection connection;
+
+            string ip = IPTextBox.Text;
+            int port;
+            if(!Int32.TryParse(portTextBox.Text, out port))
+            {
+                MessageBox.Show("Invalid port");
+                return;
+            }
+
+            // Setup connection
+            if (radioClient.Checked)
+            {
+                connection = new Client(ip, port);
+            }
+            else
+            {
+                connection = new Server(port);
+            }
+
+            connection.Connect();
         }
 
-        private void fileList_DragEnter(object sender, DragEventArgs e)
+        #region File listView
+
+        private void fileListView_DragEnter(object sender, DragEventArgs e)
         {
-            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effect = DragDropEffects.Copy;
             }
@@ -72,36 +100,62 @@ namespace MUFT
             }
         }
 
-        private void fileList_DragDrop(object sender, DragEventArgs e)
+        private void fileListView_DragDrop(object sender, DragEventArgs e)
         {
-            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
-                foreach(string path in filePaths)
+                foreach (string path in filePaths)
                 {
+                    // Get file info
+                    FileInfo fi = new FileInfo(path);
+
+                    // Create File and add to file list
+                    SimpleFileInfo file = new SimpleFileInfo(path, fi.Length, 0);
+                    fileList.Add(file);
+                    numFiles++;
+                    totalSize += file.Size;
+
+                    UpdateTotalSize();
+
+                    // Create list view item
                     ListViewItem item = new ListViewItem();
-                    item.Text = "X"; // Status
-                    item.SubItems.Add(path);
-                    item.SubItems.Add("32 KB");
-                    fileList.Items.Add(item);
+                    item.Text = "-"; // Status
+                    item.SubItems.Add(file.Path);
+                    item.SubItems.Add(file.SizeString);
+                    fileListView.Items.Add(item);
                 }
             }
         }
 
-        private void fileList_KeyDown(object sender, KeyEventArgs e)
+        private void fileListView_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Delete)
+            // Delete selected items on pressing del
+            if (e.KeyCode == Keys.Delete)
             {
-                foreach(ListViewItem item in ((ListView)sender).SelectedItems)
+                foreach (ListViewItem item in ((ListView)sender).SelectedItems)
                 {
+                    numFiles--;
+                    totalSize -= fileList[item.Index].Size;
+                    UpdateTotalSize();
+
+                    fileList.RemoveAt(item.Index);
                     item.Remove();
                 }
             }
+        }
+
+        private void fileListView_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
+        {
+            // Dont allow columns to be resized
+            e.Cancel = true;
+            e.NewWidth = fileListView.Columns[e.ColumnIndex].Width;
         }
 
         private void fileList_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
+        #endregion
     }
 }

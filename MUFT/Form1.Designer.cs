@@ -38,14 +38,14 @@
             this.networkGroup = new System.Windows.Forms.GroupBox();
             this.connectButton = new System.Windows.Forms.Button();
             this.filesGroup = new System.Windows.Forms.GroupBox();
-            this.fileList = new System.Windows.Forms.ListView();
+            this.fileListView = new System.Windows.Forms.ListView();
+            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pathHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.sizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.totalProgress = new System.Windows.Forms.ProgressBar();
             this.currentFileGroup = new System.Windows.Forms.GroupBox();
             this.totalFilesGroup = new System.Windows.Forms.GroupBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.sizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panel1.SuspendLayout();
             this.networkGroup.SuspendLayout();
             this.filesGroup.SuspendLayout();
@@ -145,7 +145,7 @@
             // 
             // filesGroup
             // 
-            this.filesGroup.Controls.Add(this.fileList);
+            this.filesGroup.Controls.Add(this.fileListView);
             this.filesGroup.Location = new System.Drawing.Point(1, 97);
             this.filesGroup.Name = "filesGroup";
             this.filesGroup.Size = new System.Drawing.Size(449, 243);
@@ -153,29 +153,39 @@
             this.filesGroup.TabStop = false;
             this.filesGroup.Text = "Files";
             // 
-            // fileList
+            // fileListView
             // 
-            this.fileList.AllowDrop = true;
-            this.fileList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.fileListView.AllowDrop = true;
+            this.fileListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.statusHeader,
             this.pathHeader,
             this.sizeHeader});
-            this.fileList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.fileList.FullRowSelect = true;
-            this.fileList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.fileList.LabelEdit = true;
-            this.fileList.Location = new System.Drawing.Point(3, 16);
-            this.fileList.Name = "fileList";
-            this.fileList.Size = new System.Drawing.Size(443, 224);
-            this.fileList.TabIndex = 0;
-            this.fileList.UseCompatibleStateImageBehavior = false;
-            this.fileList.View = System.Windows.Forms.View.Details;
-            this.fileList.SelectedIndexChanged += new System.EventHandler(this.fileList_SelectedIndexChanged);
+            this.fileListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.fileListView.FullRowSelect = true;
+            this.fileListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.fileListView.LabelEdit = true;
+            this.fileListView.Location = new System.Drawing.Point(3, 16);
+            this.fileListView.Name = "fileListView";
+            this.fileListView.Size = new System.Drawing.Size(443, 224);
+            this.fileListView.TabIndex = 0;
+            this.fileListView.UseCompatibleStateImageBehavior = false;
+            this.fileListView.View = System.Windows.Forms.View.Details;
+            this.fileListView.SelectedIndexChanged += new System.EventHandler(this.fileList_SelectedIndexChanged);
+            // 
+            // statusHeader
+            // 
+            this.statusHeader.Text = "S";
+            this.statusHeader.Width = 25;
             // 
             // pathHeader
             // 
             this.pathHeader.Text = "File";
-            this.pathHeader.Width = 368;
+            this.pathHeader.Width = 343;
+            // 
+            // sizeHeader
+            // 
+            this.sizeHeader.Text = "Size";
+            this.sizeHeader.Width = 75;
             // 
             // totalProgress
             // 
@@ -217,16 +227,6 @@
             this.progressBar1.Step = 1;
             this.progressBar1.TabIndex = 9;
             // 
-            // statusHeader
-            // 
-            this.statusHeader.Text = "S";
-            this.statusHeader.Width = 25;
-            // 
-            // sizeHeader
-            // 
-            this.sizeHeader.Text = "Size";
-            this.sizeHeader.Width = 50;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -264,7 +264,7 @@
         private System.Windows.Forms.GroupBox networkGroup;
         private System.Windows.Forms.Button connectButton;
         private System.Windows.Forms.GroupBox filesGroup;
-        private System.Windows.Forms.ListView fileList;
+        private System.Windows.Forms.ListView fileListView;
         private System.Windows.Forms.ColumnHeader pathHeader;
         private System.Windows.Forms.ProgressBar totalProgress;
         private System.Windows.Forms.GroupBox currentFileGroup;
