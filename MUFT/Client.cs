@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Windows.Forms;
 
 namespace MUFT
 {
-    class Client : Connection
+    class Client : FileTransferConnection
     {
         string ip; // Remote ip
 
@@ -17,13 +18,12 @@ namespace MUFT
         {
             try
             {
-                Console.WriteLine("Connecting...");
                 connection = new TcpClient(this.ip, this.port);
-                Console.WriteLine("Connected to " + connection.Client.RemoteEndPoint.ToString());
+                ns = connection.GetStream();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                MessageBox.Show(e.ToString());
             }
         }
     }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Windows.Forms;
 
 namespace MUFT
 {
-    class Server : Connection
+    class Server : FileTransferConnection
     {
         public Server(int port)
         {
@@ -22,14 +23,12 @@ namespace MUFT
                 // Start listening for client requests
                 listener.Start();
 
-                Console.WriteLine("Waiting for a connection...");
-
                 connection = listener.AcceptTcpClient();
-                Console.WriteLine("Connected to " + connection.Client.RemoteEndPoint.ToString());
+                ns = connection.GetStream();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                MessageBox.Show(e.ToString());
             }
         }
     }
