@@ -145,7 +145,7 @@ namespace MUFT
             }
             else if (radioReceive.Checked)
             {
-                connection.ReceiveFiles(args.path, currentProgress, totalProgress);
+                connection.ReceiveFiles(args.path, (BackgroundWorker)sender);
             }
         }
 
