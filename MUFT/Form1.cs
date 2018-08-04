@@ -110,6 +110,8 @@ namespace MUFT
                 args.path = folderBrowser.SelectedPath;
             }
 
+            fileListView.Enabled = false;
+
             BackgroundWorker bgw = new BackgroundWorker();
             bgw.WorkerReportsProgress = true;
             bgw.ProgressChanged += bgw_ProgressChanged;
@@ -120,8 +122,6 @@ namespace MUFT
 
         void bgw_TransferFiles(object sender, DoWorkEventArgs e)
         {
-            fileListView.Enabled = false;
-
             BgwArgs args = (BgwArgs)e.Argument;
 
             FileTransferConnection connection;
@@ -141,12 +141,10 @@ namespace MUFT
                 connection.NumFiles = numFiles;
                 connection.TotalSize = totalSize;
 
-                connection.Connect();
                 connection.SendFiles((BackgroundWorker)sender);
             }
             else if (radioReceive.Checked)
             {
-                connection.Connect();
                 connection.ReceiveFiles(args.path, currentProgress, totalProgress);
             }
         }
@@ -154,9 +152,12 @@ namespace MUFT
         void bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             ProgressArgs args = (ProgressArgs)e.UserState;
-            Console.WriteLine(args.currentProgress);
+
             currentProgress.Value = args.currentProgress;
+            totalProgress.Value = args.totalProgress;
+
             currentProgress.Refresh();
+            totalProgress.Refresh();
         }
 
 

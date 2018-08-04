@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
@@ -26,10 +25,11 @@ namespace MUFT
                 listener.Start();
                 connection = listener.AcceptTcpClient();
                 Console.WriteLine("Connected!");
+                listener.Stop();
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.ToString());
+                MessageBox.Show(e.Message);
             }
         }
     }
