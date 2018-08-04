@@ -36,25 +36,26 @@
             this.radioServer = new System.Windows.Forms.RadioButton();
             this.clientServerPanel = new System.Windows.Forms.Panel();
             this.networkGroup = new System.Windows.Forms.GroupBox();
+            this.sendReceivePanel = new System.Windows.Forms.Panel();
+            this.radioReceive = new System.Windows.Forms.RadioButton();
+            this.radioSend = new System.Windows.Forms.RadioButton();
             this.connectButton = new System.Windows.Forms.Button();
             this.filesGroup = new System.Windows.Forms.GroupBox();
             this.fileListView = new System.Windows.Forms.ListView();
             this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pathHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.sizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.totalProgress = new System.Windows.Forms.ProgressBar();
+            this.currentProgress = new System.Windows.Forms.ProgressBar();
             this.currentFileGroup = new System.Windows.Forms.GroupBox();
             this.totalFilesGroup = new System.Windows.Forms.GroupBox();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.sendReceivePanel = new System.Windows.Forms.Panel();
-            this.receiveRadio = new System.Windows.Forms.RadioButton();
-            this.sendRadio = new System.Windows.Forms.RadioButton();
+            this.totalProgress = new System.Windows.Forms.ProgressBar();
+            this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.clientServerPanel.SuspendLayout();
             this.networkGroup.SuspendLayout();
+            this.sendReceivePanel.SuspendLayout();
             this.filesGroup.SuspendLayout();
             this.currentFileGroup.SuspendLayout();
             this.totalFilesGroup.SuspendLayout();
-            this.sendReceivePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // IPLabel
@@ -72,6 +73,7 @@
             this.IPTextBox.Name = "IPTextBox";
             this.IPTextBox.Size = new System.Drawing.Size(106, 20);
             this.IPTextBox.TabIndex = 1;
+            this.IPTextBox.Text = "127.0.0.1";
             // 
             // portLabel
             // 
@@ -88,6 +90,7 @@
             this.portTextBox.Name = "portTextBox";
             this.portTextBox.Size = new System.Drawing.Size(41, 20);
             this.portTextBox.TabIndex = 3;
+            this.portTextBox.Text = "6112";
             // 
             // radioClient
             // 
@@ -117,7 +120,7 @@
             // 
             this.clientServerPanel.Controls.Add(this.radioServer);
             this.clientServerPanel.Controls.Add(this.radioClient);
-            this.clientServerPanel.Location = new System.Drawing.Point(228, 15);
+            this.clientServerPanel.Location = new System.Drawing.Point(231, 14);
             this.clientServerPanel.Name = "clientServerPanel";
             this.clientServerPanel.Size = new System.Drawing.Size(118, 23);
             this.clientServerPanel.TabIndex = 6;
@@ -138,9 +141,41 @@
             this.networkGroup.TabStop = false;
             this.networkGroup.Text = "Network";
             // 
+            // sendReceivePanel
+            // 
+            this.sendReceivePanel.Controls.Add(this.radioReceive);
+            this.sendReceivePanel.Controls.Add(this.radioSend);
+            this.sendReceivePanel.Location = new System.Drawing.Point(352, 14);
+            this.sendReceivePanel.Name = "sendReceivePanel";
+            this.sendReceivePanel.Size = new System.Drawing.Size(125, 23);
+            this.sendReceivePanel.TabIndex = 7;
+            // 
+            // radioReceive
+            // 
+            this.radioReceive.AutoSize = true;
+            this.radioReceive.Location = new System.Drawing.Point(60, 3);
+            this.radioReceive.Name = "radioReceive";
+            this.radioReceive.Size = new System.Drawing.Size(65, 17);
+            this.radioReceive.TabIndex = 5;
+            this.radioReceive.Text = "Receive";
+            this.radioReceive.UseVisualStyleBackColor = true;
+            this.radioReceive.CheckedChanged += new System.EventHandler(this.radioReceive_CheckedChanged);
+            // 
+            // radioSend
+            // 
+            this.radioSend.AutoSize = true;
+            this.radioSend.Checked = true;
+            this.radioSend.Location = new System.Drawing.Point(3, 3);
+            this.radioSend.Name = "radioSend";
+            this.radioSend.Size = new System.Drawing.Size(50, 17);
+            this.radioSend.TabIndex = 4;
+            this.radioSend.TabStop = true;
+            this.radioSend.Text = "Send";
+            this.radioSend.UseVisualStyleBackColor = true;
+            // 
             // connectButton
             // 
-            this.connectButton.Location = new System.Drawing.Point(483, 15);
+            this.connectButton.Location = new System.Drawing.Point(481, 13);
             this.connectButton.Name = "connectButton";
             this.connectButton.Size = new System.Drawing.Size(75, 23);
             this.connectButton.TabIndex = 7;
@@ -185,25 +220,25 @@
             // pathHeader
             // 
             this.pathHeader.Text = "File";
-            this.pathHeader.Width = 456;
+            this.pathHeader.Width = 461;
             // 
             // sizeHeader
             // 
             this.sizeHeader.Text = "Size";
-            this.sizeHeader.Width = 75;
+            this.sizeHeader.Width = 66;
             // 
-            // totalProgress
+            // currentProgress
             // 
-            this.totalProgress.Enabled = false;
-            this.totalProgress.Location = new System.Drawing.Point(4, 17);
-            this.totalProgress.Name = "totalProgress";
-            this.totalProgress.Size = new System.Drawing.Size(555, 23);
-            this.totalProgress.Step = 1;
-            this.totalProgress.TabIndex = 9;
+            this.currentProgress.Enabled = false;
+            this.currentProgress.Location = new System.Drawing.Point(4, 17);
+            this.currentProgress.Name = "currentProgress";
+            this.currentProgress.Size = new System.Drawing.Size(555, 23);
+            this.currentProgress.Step = 1;
+            this.currentProgress.TabIndex = 9;
             // 
             // currentFileGroup
             // 
-            this.currentFileGroup.Controls.Add(this.totalProgress);
+            this.currentFileGroup.Controls.Add(this.currentProgress);
             this.currentFileGroup.Location = new System.Drawing.Point(1, 3);
             this.currentFileGroup.Margin = new System.Windows.Forms.Padding(5);
             this.currentFileGroup.Name = "currentFileGroup";
@@ -214,7 +249,7 @@
             // 
             // totalFilesGroup
             // 
-            this.totalFilesGroup.Controls.Add(this.progressBar1);
+            this.totalFilesGroup.Controls.Add(this.totalProgress);
             this.totalFilesGroup.Location = new System.Drawing.Point(1, 51);
             this.totalFilesGroup.Margin = new System.Windows.Forms.Padding(5);
             this.totalFilesGroup.Name = "totalFilesGroup";
@@ -223,45 +258,19 @@
             this.totalFilesGroup.TabStop = false;
             this.totalFilesGroup.Text = "Total";
             // 
-            // progressBar1
+            // totalProgress
             // 
-            this.progressBar1.Enabled = false;
-            this.progressBar1.Location = new System.Drawing.Point(4, 17);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(555, 23);
-            this.progressBar1.Step = 1;
-            this.progressBar1.TabIndex = 9;
+            this.totalProgress.Enabled = false;
+            this.totalProgress.Location = new System.Drawing.Point(4, 17);
+            this.totalProgress.Name = "totalProgress";
+            this.totalProgress.Size = new System.Drawing.Size(555, 23);
+            this.totalProgress.Step = 1;
+            this.totalProgress.TabIndex = 9;
             // 
-            // sendReceivePanel
+            // folderBrowser
             // 
-            this.sendReceivePanel.Controls.Add(this.receiveRadio);
-            this.sendReceivePanel.Controls.Add(this.sendRadio);
-            this.sendReceivePanel.Location = new System.Drawing.Point(352, 15);
-            this.sendReceivePanel.Name = "sendReceivePanel";
-            this.sendReceivePanel.Size = new System.Drawing.Size(125, 23);
-            this.sendReceivePanel.TabIndex = 7;
-            // 
-            // receiveRadio
-            // 
-            this.receiveRadio.AutoSize = true;
-            this.receiveRadio.Location = new System.Drawing.Point(60, 3);
-            this.receiveRadio.Name = "receiveRadio";
-            this.receiveRadio.Size = new System.Drawing.Size(65, 17);
-            this.receiveRadio.TabIndex = 5;
-            this.receiveRadio.Text = "Receive";
-            this.receiveRadio.UseVisualStyleBackColor = true;
-            // 
-            // sendRadio
-            // 
-            this.sendRadio.AutoSize = true;
-            this.sendRadio.Checked = true;
-            this.sendRadio.Location = new System.Drawing.Point(3, 3);
-            this.sendRadio.Name = "sendRadio";
-            this.sendRadio.Size = new System.Drawing.Size(50, 17);
-            this.sendRadio.TabIndex = 4;
-            this.sendRadio.TabStop = true;
-            this.sendRadio.Text = "Send";
-            this.sendRadio.UseVisualStyleBackColor = true;
+            this.folderBrowser.Description = "Select where to save the received files.";
+            this.folderBrowser.HelpRequest += new System.EventHandler(this.folderBrowser_HelpRequest);
             // 
             // MainForm
             // 
@@ -276,17 +285,17 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "MUFT";
+            this.Text = "MUFT - Mattias Ulmstedt File Transfer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.clientServerPanel.ResumeLayout(false);
             this.clientServerPanel.PerformLayout();
             this.networkGroup.ResumeLayout(false);
             this.networkGroup.PerformLayout();
+            this.sendReceivePanel.ResumeLayout(false);
+            this.sendReceivePanel.PerformLayout();
             this.filesGroup.ResumeLayout(false);
             this.currentFileGroup.ResumeLayout(false);
             this.totalFilesGroup.ResumeLayout(false);
-            this.sendReceivePanel.ResumeLayout(false);
-            this.sendReceivePanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -304,14 +313,15 @@
         private System.Windows.Forms.GroupBox filesGroup;
         private System.Windows.Forms.ListView fileListView;
         private System.Windows.Forms.ColumnHeader pathHeader;
-        private System.Windows.Forms.ProgressBar totalProgress;
+        private System.Windows.Forms.ProgressBar currentProgress;
         private System.Windows.Forms.GroupBox currentFileGroup;
         private System.Windows.Forms.GroupBox totalFilesGroup;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar totalProgress;
         private System.Windows.Forms.ColumnHeader statusHeader;
         private System.Windows.Forms.ColumnHeader sizeHeader;
         private System.Windows.Forms.Panel sendReceivePanel;
-        private System.Windows.Forms.RadioButton receiveRadio;
-        private System.Windows.Forms.RadioButton sendRadio;
+        private System.Windows.Forms.RadioButton radioReceive;
+        private System.Windows.Forms.RadioButton radioSend;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowser;
     }
 }

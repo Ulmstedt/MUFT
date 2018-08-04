@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
@@ -21,10 +22,10 @@ namespace MUFT
                 TcpListener listener = new TcpListener(localAddr, this.port);
 
                 // Start listening for client requests
+                Console.WriteLine("Listening for connections...");
                 listener.Start();
-
                 connection = listener.AcceptTcpClient();
-                ns = connection.GetStream();
+                Console.WriteLine("Connected!");
             }
             catch (Exception e)
             {

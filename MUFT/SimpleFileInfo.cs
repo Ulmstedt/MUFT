@@ -8,6 +8,7 @@
         private static long KILOBYTE = 1000;
 
         public string Path { get; set; }
+        public string Name { get; set; }
         private long size;
         public long Size
         {
@@ -24,9 +25,10 @@
         public string SizeString { get; private set; }
         public long Checksum { get; set; }
 
-        public SimpleFileInfo(string path, long size, long checksum)
+        public SimpleFileInfo(string path, string name, long size, long checksum)
         {
             this.Path = path;
+            this.Name = name;
             this.Size = size;
             this.Checksum = checksum;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Windows.Forms;
 
@@ -18,8 +19,9 @@ namespace MUFT
         {
             try
             {
+                Console.WriteLine("Trying to connect");
                 connection = new TcpClient(this.ip, this.port);
-                ns = connection.GetStream();
+                Console.WriteLine("Connected!");
             }
             catch (Exception e)
             {

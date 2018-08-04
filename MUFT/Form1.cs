@@ -1,15 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Net;
 using System.Windows.Forms;
 
 namespace MUFT
 {
+    // Arguments needed to start the file transfer with a background worker
+    struct BgwArgs
+    {
+        public string ip;
+        public int port;
+        public string path;
+        public BgwArgs(string ip, int port)
+        {
+            this.ip = ip;
+            this.port = port;
+            this.path = "";
+        }
+    }
+
+    // Arguments needed to update the progress bars
+    struct ProgressArgs
+    {
+        public int currentProgress;
+        public int totalProgress;
+        public ProgressArgs(int curr, int total)
+        {
+            this.currentProgress = curr;
+            this.totalProgress = total;
+        }
+    }
+
     public partial class MainForm : Form
     {
         private List<SimpleFileInfo> fileList;
         private int numFiles = 0;
         private long totalSize = 0;
+
+        
 
         public MainForm()
         {
@@ -63,27 +93,88 @@ namespace MUFT
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            FileTransferConnection connection;
-
             string ip = IPTextBox.Text;
             int port;
-            if(!Int32.TryParse(portTextBox.Text, out port))
+            if (!Int32.TryParse(portTextBox.Text, out port))
             {
                 MessageBox.Show("Invalid port");
                 return;
             }
 
+            BgwArgs args = new BgwArgs(ip, port);
+
+            if (radioReceive.Checked)
+            {
+                // Allow the user to select where to save the received files
+                folderBrowser.ShowDialog();
+                args.path = folderBrowser.SelectedPath;
+            }
+
+            BackgroundWorker bgw = new BackgroundWorker();
+            bgw.WorkerReportsProgress = true;
+            bgw.ProgressChanged += bgw_ProgressChanged;
+            bgw.DoWork += bgw_TransferFiles;
+            bgw.RunWorkerCompleted += bgw_TransferComplete;
+            bgw.RunWorkerAsync(args);
+        }
+
+        void bgw_TransferFiles(object sender, DoWorkEventArgs e)
+        {
+            fileListView.Enabled = false;
+
+            BgwArgs args = (BgwArgs)e.Argument;
+
+            FileTransferConnection connection;
+
             // Setup connection
             if (radioClient.Checked)
             {
-                connection = new Client(ip, port);
+                connection = new Client(args.ip, args.port);
             }
             else
             {
-                connection = new Server(port);
+                connection = new Server(args.port);
             }
+            if (radioSend.Checked)
+            {
+                connection.FileList = fileList;
+                connection.NumFiles = numFiles;
+                connection.TotalSize = totalSize;
 
-            connection.Connect();
+                connection.Connect();
+                connection.SendFiles((BackgroundWorker)sender);
+            }
+            else if (radioReceive.Checked)
+            {
+                connection.Connect();
+                connection.ReceiveFiles(args.path, currentProgress, totalProgress);
+            }
+        }
+
+        void bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressArgs args = (ProgressArgs)e.UserState;
+            Console.WriteLine(args.currentProgress);
+            currentProgress.Value = args.currentProgress;
+            currentProgress.Refresh();
+        }
+
+
+        void bgw_TransferComplete(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled)
+            {
+                MessageBox.Show("Transfer cancelled!");
+            }
+            else if (e.Error != null)
+            {
+                MessageBox.Show("Error: " + e.Error.Message);
+            }
+            else
+            {
+                MessageBox.Show("Transfer complete!");
+            }
+            fileListView.Enabled = true;
         }
 
         #region File listView
@@ -111,7 +202,7 @@ namespace MUFT
                     FileInfo fi = new FileInfo(path);
 
                     // Create File and add to file list
-                    SimpleFileInfo file = new SimpleFileInfo(path, fi.Length, 0);
+                    SimpleFileInfo file = new SimpleFileInfo(fi.FullName, fi.Name, fi.Length, 0);
                     fileList.Add(file);
                     numFiles++;
                     totalSize += file.Size;
@@ -157,5 +248,22 @@ namespace MUFT
 
         }
         #endregion
+
+        private void folderBrowser_HelpRequest(object sender, EventArgs e)
+        {
+
+        }
+
+        private void radioReceive_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioReceive.Checked)
+            {
+                fileListView.Enabled = false;
+            }
+            else
+            {
+                fileListView.Enabled = true;
+            }
+        }
     }
 }
