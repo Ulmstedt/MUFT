@@ -127,6 +127,7 @@ namespace MUFT
 
             if (radioReceive.Checked)
             {
+                fileListView.Clear();
                 // Allow the user to select where to save the received files
                 folderBrowser.ShowDialog();
                 args.path = folderBrowser.SelectedPath;
