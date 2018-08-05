@@ -77,6 +77,9 @@ namespace MUFT
         public void SendFiles(BackgroundWorker bgw)
         {
             Connect();
+            if (connection == null)
+                return;
+
             BinaryWriter bw = null;
             try
             {
@@ -85,7 +88,7 @@ namespace MUFT
                 if (!SendMetaData(bw))
                 {
                     MessageBox.Show("Failed to send meta data");
-                    bgw.CancelAsync();
+                    return;
                 }
 
                 speedTimer.Start();
@@ -98,7 +101,7 @@ namespace MUFT
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
-                bgw.CancelAsync();
+                return;
             }
             finally
             {
@@ -115,6 +118,9 @@ namespace MUFT
         public void ReceiveFiles(string path, BackgroundWorker bgw)
         {
             Connect();
+            if (connection == null)
+                return;
+
             BinaryReader br = null;
             try
             {
@@ -122,7 +128,7 @@ namespace MUFT
                 if (!RecvMetaData(br))
                 {
                     MessageBox.Show("Failed to receive meta data");
-                    bgw.CancelAsync();
+                    return;
                 }
 
                 speedTimer.Start();
@@ -135,7 +141,7 @@ namespace MUFT
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
-                bgw.CancelAsync();
+                return;
             }
             finally
             {
@@ -178,7 +184,7 @@ namespace MUFT
                     if (curr - lastReportedCurr > 1 || curr == 100) // Only update changes of 1% or more
                     {
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
-                        bgw.ReportProgress(0, new ProgressArgs(curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
+                        bgw.ReportProgress(0, new ProgressArgs(null, curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
                         lastReportedCurr = curr;
                     }
 
@@ -205,14 +211,16 @@ namespace MUFT
             {
                 long fileSize = br.ReadInt64();
                 string fileName = br.ReadString();
+                string fullPath = path + @"\" + fileName;
                 Console.WriteLine("Receiving " + fileName + ", " + fileSize);
 
-                bw = new BinaryWriter(File.OpenWrite(path + @"\" + fileName));
+                bw = new BinaryWriter(File.OpenWrite(fullPath));
 
                 long bytesReceived = 0;
                 long bytesLeft = fileSize;
                 Byte[] bytes = new Byte[chunkSize]; // Buffer
 
+                bool reportedFile = false;
                 int lastReportedCurr = 0;
                 while (bytesLeft > 0)
                 {
@@ -229,8 +237,14 @@ namespace MUFT
                     int curr = (int)((float)bytesReceived / fileSize * 100);
                     if (curr - lastReportedCurr > 1 || curr == 100) // Only update changes of 1% or more
                     {
+                        SimpleFileInfo fileInfo = null;
+                        if(!reportedFile)
+                        {
+                            fileInfo = new SimpleFileInfo(fullPath, fileName, fileSize, 0);
+                            reportedFile = true;
+                        }
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
-                        bgw.ReportProgress(0, new ProgressArgs(curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
+                        bgw.ReportProgress(0, new ProgressArgs(fileInfo, curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
                         lastReportedCurr = curr;
                     }
                 }

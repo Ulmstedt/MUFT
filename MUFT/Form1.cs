@@ -31,8 +31,10 @@ namespace MUFT
         public long bytesTransfered;
         public long bytesTotal;
         public TimeSpan timeRemaining; // Seconds
-        public ProgressArgs(int currProg, int totalProg, long bytesTransfered, long bytesTotal, long currSpeed, TimeSpan timeRemaining)
+        public SimpleFileInfo fileInfo;
+        public ProgressArgs(SimpleFileInfo fileInfo, int currProg, int totalProg, long bytesTransfered, long bytesTotal, long currSpeed, TimeSpan timeRemaining)
         {
+            this.fileInfo = fileInfo;
             this.currentProgress = currProg;
             this.totalProgress = totalProg;
             this.bytesTransfered = bytesTransfered;
@@ -95,6 +97,7 @@ namespace MUFT
             totalProgress.Size = new Size(555, 23);
             totalProgress.Step = 1;
             totalProgress.TabIndex = 9;
+            
             totalFilesGroup.Controls.Add(totalProgress);
 
         }
@@ -178,7 +181,12 @@ namespace MUFT
             string progress = Utilities.SizeToString(args.bytesTransfered) + " / " + Utilities.SizeToString(args.bytesTotal);
             string speed = Utilities.SizeToString(args.currentSpeed) + "/s";
             string timeRemaining = Utilities.TimeToText(args.timeRemaining);
-            totalProgress.CustomText = progress + " (" + speed + ") - " + timeRemaining;
+            totalProgress.CustomText = progress + " (" + speed + ") - " + timeRemaining + " remaining";
+
+            if(args.fileInfo != null)
+            {
+                AddListViewItem("-", args.fileInfo.Path, args.fileInfo.SizeString);
+            }
 
             currentProgress.Refresh();
             totalProgress.Refresh();
@@ -206,6 +214,15 @@ namespace MUFT
             currentProgress.Refresh();
             totalProgress.Refresh();
             EnableForm();
+        }
+
+        void AddListViewItem(string status, string path, string size)
+        {
+            ListViewItem item = new ListViewItem();
+            item.Text = status; // Status
+            item.SubItems.Add(path);
+            item.SubItems.Add(size);
+            fileListView.Items.Add(item);
         }
 
         // Disables most components of the form (for when transfering files)
@@ -261,13 +278,7 @@ namespace MUFT
                     totalSize += file.Size;
 
                     UpdateTotalSize();
-
-                    // Create list view item
-                    ListViewItem item = new ListViewItem();
-                    item.Text = "-"; // Status
-                    item.SubItems.Add(file.Path);
-                    item.SubItems.Add(file.SizeString);
-                    fileListView.Items.Add(item);
+                    AddListViewItem("-", file.Path, file.SizeString);
                 }
             }
         }

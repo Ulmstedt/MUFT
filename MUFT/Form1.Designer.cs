@@ -223,6 +223,7 @@
             // sizeHeader
             // 
             this.sizeHeader.Text = "Size";
+            this.sizeHeader.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.sizeHeader.Width = 66;
             // 
             // currentProgress

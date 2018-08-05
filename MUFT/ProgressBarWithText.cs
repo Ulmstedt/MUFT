@@ -22,7 +22,7 @@ namespace MUFT
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
-
+            
             switch (m.Msg)
             {
                 case WM_PAINT:
