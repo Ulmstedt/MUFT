@@ -48,14 +48,12 @@
             this.currentProgress = new System.Windows.Forms.ProgressBar();
             this.currentFileGroup = new System.Windows.Forms.GroupBox();
             this.totalFilesGroup = new System.Windows.Forms.GroupBox();
-            this.totalProgress = new System.Windows.Forms.ProgressBar();
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.clientServerPanel.SuspendLayout();
             this.networkGroup.SuspendLayout();
             this.sendReceivePanel.SuspendLayout();
             this.filesGroup.SuspendLayout();
             this.currentFileGroup.SuspendLayout();
-            this.totalFilesGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // IPLabel
@@ -249,7 +247,6 @@
             // 
             // totalFilesGroup
             // 
-            this.totalFilesGroup.Controls.Add(this.totalProgress);
             this.totalFilesGroup.Location = new System.Drawing.Point(1, 51);
             this.totalFilesGroup.Margin = new System.Windows.Forms.Padding(5);
             this.totalFilesGroup.Name = "totalFilesGroup";
@@ -257,20 +254,6 @@
             this.totalFilesGroup.TabIndex = 11;
             this.totalFilesGroup.TabStop = false;
             this.totalFilesGroup.Text = "Total";
-            // 
-            // totalProgress
-            // 
-            this.totalProgress.Enabled = false;
-            this.totalProgress.Location = new System.Drawing.Point(4, 17);
-            this.totalProgress.Name = "totalProgress";
-            this.totalProgress.Size = new System.Drawing.Size(555, 23);
-            this.totalProgress.Step = 1;
-            this.totalProgress.TabIndex = 9;
-            // 
-            // folderBrowser
-            // 
-            this.folderBrowser.Description = "Select where to save the received files.";
-            this.folderBrowser.HelpRequest += new System.EventHandler(this.folderBrowser_HelpRequest);
             // 
             // MainForm
             // 
@@ -295,7 +278,6 @@
             this.sendReceivePanel.PerformLayout();
             this.filesGroup.ResumeLayout(false);
             this.currentFileGroup.ResumeLayout(false);
-            this.totalFilesGroup.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -316,7 +298,6 @@
         private System.Windows.Forms.ProgressBar currentProgress;
         private System.Windows.Forms.GroupBox currentFileGroup;
         private System.Windows.Forms.GroupBox totalFilesGroup;
-        private System.Windows.Forms.ProgressBar totalProgress;
         private System.Windows.Forms.ColumnHeader statusHeader;
         private System.Windows.Forms.ColumnHeader sizeHeader;
         private System.Windows.Forms.Panel sendReceivePanel;

@@ -7,7 +7,7 @@ namespace MUFT
 {
     class Server : FileTransferConnection
     {
-        public Server(int port)
+        public Server(int port) : base()
         {
             this.port = port;
         }

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 
 namespace MUFT
@@ -14,16 +15,63 @@ namespace MUFT
         protected TcpClient connection = null;
         protected int port; // Port to listen on/connect to
 
-        private int chunkSize = 16384;
+        private const int chunkSize = 16384;
+        private const int movingAvgSize = 5;
 
         public List<SimpleFileInfo> FileList { get; set; }
         public int NumFiles { get; set; }
         public long TotalSize { get; set; }
 
         private long totalBytesTransfered;
+        private long previousTotalBytesTransfered;
+
+        private List<long> recentSpeeds;
+        public long CurrentSpeed
+        {
+            get
+            {
+                if (recentSpeeds.Count != 0)
+                {
+                    return (long)recentSpeeds.Average();
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            set
+            {
+                recentSpeeds.Add(value);
+                if (recentSpeeds.Count > movingAvgSize)
+                    recentSpeeds.RemoveAt(0);
+            }
+        }
+
+        public TimeSpan TimeRemaining { get; set; }
+
+        System.Timers.Timer speedTimer;
 
         abstract public void Connect();
 
+        protected FileTransferConnection()
+        {
+            recentSpeeds = new List<long>();
+            InitializeSpeedTimer();
+        }
+
+        private void InitializeSpeedTimer()
+        {
+            speedTimer = new System.Timers.Timer(1000);
+            speedTimer.Elapsed += speedTimer_Tick;
+            speedTimer.AutoReset = true;
+        }
+
+        public void speedTimer_Tick(Object source, ElapsedEventArgs e)
+        {
+            CurrentSpeed = totalBytesTransfered - previousTotalBytesTransfered;
+            TimeRemaining = TimeSpan.FromSeconds((TotalSize - totalBytesTransfered) / CurrentSpeed);
+            previousTotalBytesTransfered = totalBytesTransfered;
+        }
 
         // Send all files in fileList
         public void SendFiles(BackgroundWorker bgw)
@@ -34,11 +82,13 @@ namespace MUFT
             {
                 totalBytesTransfered = 0;
                 bw = new BinaryWriter(connection.GetStream());
-                if(!SendMetaData(bw))
+                if (!SendMetaData(bw))
                 {
                     MessageBox.Show("Failed to send meta data");
-                    return;
+                    bgw.CancelAsync();
                 }
+
+                speedTimer.Start();
 
                 foreach (SimpleFileInfo fileInfo in FileList)
                 {
@@ -47,15 +97,17 @@ namespace MUFT
             }
             catch (Exception e)
             {
-                new Thread(() => MessageBox.Show(e.Message)).Start();
+                MessageBox.Show(e.Message);
+                bgw.CancelAsync();
             }
             finally
             {
-                if(bw != null)
+                if (bw != null)
                 {
                     bw.Close();
                 }
                 Close();
+                speedTimer.Stop();
             }
         }
 
@@ -67,11 +119,13 @@ namespace MUFT
             try
             {
                 br = new BinaryReader(connection.GetStream());
-                if(!RecvMetaData(br))
+                if (!RecvMetaData(br))
                 {
                     MessageBox.Show("Failed to receive meta data");
-                    return;
+                    bgw.CancelAsync();
                 }
+
+                speedTimer.Start();
 
                 for (int i = 0; i < NumFiles; ++i)
                 {
@@ -81,14 +135,16 @@ namespace MUFT
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
+                bgw.CancelAsync();
             }
             finally
             {
-                if(br != null)
+                if (br != null)
                 {
                     br.Close();
                 }
                 Close();
+                speedTimer.Stop();
             }
 
         }
@@ -122,7 +178,7 @@ namespace MUFT
                     if (curr - lastReportedCurr > 1 || curr == 100) // Only update changes of 1% or more
                     {
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
-                        bgw.ReportProgress(0, new ProgressArgs(curr, total));
+                        bgw.ReportProgress(0, new ProgressArgs(curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
                         lastReportedCurr = curr;
                     }
 
@@ -174,7 +230,7 @@ namespace MUFT
                     if (curr - lastReportedCurr > 1 || curr == 100) // Only update changes of 1% or more
                     {
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
-                        bgw.ReportProgress(0, new ProgressArgs(curr, total));
+                        bgw.ReportProgress(0, new ProgressArgs(curr, total, totalBytesTransfered, TotalSize, CurrentSpeed, TimeRemaining));
                         lastReportedCurr = curr;
                     }
                 }

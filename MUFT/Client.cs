@@ -8,7 +8,7 @@ namespace MUFT
     {
         string ip; // Remote ip
 
-        public Client(string ip, int port)
+        public Client(string ip, int port) : base()
         {
             this.ip = ip;
             this.port = port;

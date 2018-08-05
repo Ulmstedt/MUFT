@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
@@ -21,15 +22,23 @@ namespace MUFT
         }
     }
 
-    // Arguments needed to update the progress bars
+    // Arguments needed to update the progress
     struct ProgressArgs
     {
         public int currentProgress;
         public int totalProgress;
-        public ProgressArgs(int curr, int total)
+        public long currentSpeed;
+        public long bytesTransfered;
+        public long bytesTotal;
+        public TimeSpan timeRemaining; // Seconds
+        public ProgressArgs(int currProg, int totalProg, long bytesTransfered, long bytesTotal, long currSpeed, TimeSpan timeRemaining)
         {
-            this.currentProgress = curr;
-            this.totalProgress = total;
+            this.currentProgress = currProg;
+            this.totalProgress = totalProg;
+            this.bytesTransfered = bytesTransfered;
+            this.bytesTotal = bytesTotal;
+            this.currentSpeed = currSpeed;
+            this.timeRemaining = timeRemaining;
         }
     }
 
@@ -39,7 +48,7 @@ namespace MUFT
         private int numFiles = 0;
         private long totalSize = 0;
 
-        
+        ProgressBarWithText totalProgress;
 
         public MainForm()
         {
@@ -49,7 +58,7 @@ namespace MUFT
 
         private void UpdateTotalSize()
         {
-            totalFilesGroup.Text = "Total (0 / " + SimpleFileInfo.SizeToString(totalSize) + ")";
+            totalFilesGroup.Text = "Total (0 / " + Utilities.SizeToString(totalSize) + ")";
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -78,6 +87,16 @@ namespace MUFT
 
             // Reduce width of listView in order to eliminate horizontal scroll bar
             //fileListView.Columns[1].Width -= (4 + SystemInformation.VerticalScrollBarWidth);
+
+            totalProgress = new ProgressBarWithText();
+            totalProgress.Enabled = false;
+            totalProgress.Location = new Point(4, 17);
+            totalProgress.Name = "currentProgress";
+            totalProgress.Size = new Size(555, 23);
+            totalProgress.Step = 1;
+            totalProgress.TabIndex = 9;
+            totalFilesGroup.Controls.Add(totalProgress);
+
         }
 
 
@@ -110,7 +129,7 @@ namespace MUFT
                 args.path = folderBrowser.SelectedPath;
             }
 
-            fileListView.Enabled = false;
+            DisableForm();
 
             BackgroundWorker bgw = new BackgroundWorker();
             bgw.WorkerReportsProgress = true;
@@ -156,6 +175,11 @@ namespace MUFT
             currentProgress.Value = args.currentProgress;
             totalProgress.Value = args.totalProgress;
 
+            string progress = Utilities.SizeToString(args.bytesTransfered) + " / " + Utilities.SizeToString(args.bytesTotal);
+            string speed = Utilities.SizeToString(args.currentSpeed) + "/s";
+            string timeRemaining = Utilities.TimeToText(args.timeRemaining);
+            totalProgress.CustomText = progress + " (" + speed + ") - " + timeRemaining;
+
             currentProgress.Refresh();
             totalProgress.Refresh();
         }
@@ -175,7 +199,35 @@ namespace MUFT
             {
                 MessageBox.Show("Transfer complete!");
             }
+
+            currentProgress.Value = 0;
+            totalProgress.Value = 0;
+            totalProgress.CustomText = "";
+            currentProgress.Refresh();
+            totalProgress.Refresh();
+            EnableForm();
+        }
+
+        // Disables most components of the form (for when transfering files)
+        void DisableForm()
+        {
+            fileListView.Enabled = false;
+            IPTextBox.Enabled = false;
+            portTextBox.Enabled = false;
+            clientServerPanel.Enabled = false;
+            sendReceivePanel.Enabled = false;
+            connectButton.Enabled = false;
+        }
+
+        // Re-enables the form
+        void EnableForm()
+        {
             fileListView.Enabled = true;
+            IPTextBox.Enabled = true;
+            portTextBox.Enabled = true;
+            clientServerPanel.Enabled = true;
+            sendReceivePanel.Enabled = true;
+            connectButton.Enabled = true;
         }
 
         #region File listView
@@ -249,11 +301,6 @@ namespace MUFT
 
         }
         #endregion
-
-        private void folderBrowser_HelpRequest(object sender, EventArgs e)
-        {
-
-        }
 
         private void radioReceive_CheckedChanged(object sender, EventArgs e)
         {
