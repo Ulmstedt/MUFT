@@ -131,6 +131,11 @@ namespace MUFT
                 // Allow the user to select where to save the received files
                 folderBrowser.ShowDialog();
                 args.path = folderBrowser.SelectedPath;
+                if(args.path == "")
+                {
+                    MessageBox.Show("Invalid save location");
+                    return;
+                }
             }
 
             DisableForm();
