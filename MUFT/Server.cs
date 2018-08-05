@@ -16,9 +16,7 @@ namespace MUFT
         {
             try
             {
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
-
-                TcpListener listener = new TcpListener(localAddr, this.port);
+                TcpListener listener = new TcpListener(IPAddress.Any, this.port);
 
                 // Start listening for client requests
                 Console.WriteLine("Listening for connections...");
