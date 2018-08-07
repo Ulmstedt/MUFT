@@ -18,14 +18,12 @@
             }
         }
         public string SizeString { get; private set; }
-        public long Checksum { get; set; }
 
-        public SimpleFileInfo(string path, string name, long size, long checksum)
+        public SimpleFileInfo(string path, string name, long size)
         {
             this.Path = path;
             this.Name = name;
             this.Size = size;
-            this.Checksum = checksum;
         }
     }
 }
