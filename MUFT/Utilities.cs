@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace MUFT
 {
@@ -41,6 +43,17 @@ namespace MUFT
         public static string TimeToText(TimeSpan t)
         {
             return string.Format("{2:D2}:{1:D2}:{0:D2}", t.Seconds, t.Minutes, t.Hours);
+        }
+
+        public static string CalculateMD5(string path)
+        {
+            using (var md5 = MD5.Create())
+            {
+                using (var fs = File.OpenRead(path))
+                {
+                    return BitConverter.ToString(md5.ComputeHash(fs)).Replace("-","");
+                }
+            }
         }
 
     }
