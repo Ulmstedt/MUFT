@@ -6,6 +6,13 @@ using System.IO;
 using System.Net;
 using System.Windows.Forms;
 
+
+/* TODO
+ * 
+ * - Vad händer om båda är senders? 
+ * 
+ * 
+ */
 namespace MUFT
 {
     // Arguments needed to start the file transfer with a background worker
@@ -60,7 +67,7 @@ namespace MUFT
 
         private void UpdateTotalSize()
         {
-            totalFilesGroup.Text = "Total (0 / " + Utilities.SizeToString(totalSize) + ")";
+            totalProgress.CustomText = "0 / " + Utilities.SizeToString(totalSize) + "";
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -97,7 +104,7 @@ namespace MUFT
             totalProgress.Size = new Size(555, 23);
             totalProgress.Step = 1;
             totalProgress.TabIndex = 9;
-            
+
             totalFilesGroup.Controls.Add(totalProgress);
 
         }
@@ -127,11 +134,11 @@ namespace MUFT
 
             if (radioReceive.Checked)
             {
-                fileListView.Clear();
+                fileListView.Items.Clear();
                 // Allow the user to select where to save the received files
                 folderBrowser.ShowDialog();
                 args.path = folderBrowser.SelectedPath;
-                if(args.path == "")
+                if (args.path == "")
                 {
                     MessageBox.Show("Invalid save location");
                     return;
@@ -163,6 +170,7 @@ namespace MUFT
             {
                 connection = new Server(args.port);
             }
+
             if (radioSend.Checked)
             {
                 connection.FileList = fileList;
@@ -189,11 +197,10 @@ namespace MUFT
             string timeRemaining = Utilities.TimeToText(args.timeRemaining);
             totalProgress.CustomText = progress + " (" + speed + ") - " + timeRemaining + " remaining";
 
-            if(args.fileInfo != null)
+            if (args.fileInfo != null)
             {
-                AddListViewItem("-", args.fileInfo.Path, args.fileInfo.SizeString);
+                AddListViewItem(args.fileInfo.Path, args.fileInfo.SizeString);
             }
-
             currentProgress.Refresh();
             totalProgress.Refresh();
         }
@@ -222,11 +229,10 @@ namespace MUFT
             EnableForm();
         }
 
-        void AddListViewItem(string status, string path, string size)
+        void AddListViewItem(string path, string size)
         {
             ListViewItem item = new ListViewItem();
-            item.Text = status; // Status
-            item.SubItems.Add(path);
+            item.Text = path;
             item.SubItems.Add(size);
             fileListView.Items.Add(item);
         }
@@ -278,13 +284,13 @@ namespace MUFT
                     FileInfo fi = new FileInfo(path);
 
                     // Create File and add to file list
-                    SimpleFileInfo file = new SimpleFileInfo(fi.FullName, fi.Name, fi.Length, 0);
+                    SimpleFileInfo file = new SimpleFileInfo(fi.FullName, fi.Name, fi.Length);
                     fileList.Add(file);
                     numFiles++;
                     totalSize += file.Size;
 
                     UpdateTotalSize();
-                    AddListViewItem("-", file.Path, file.SizeString);
+                    AddListViewItem(file.Path, file.SizeString);
                 }
             }
         }

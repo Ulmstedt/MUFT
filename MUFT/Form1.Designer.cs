@@ -42,7 +42,6 @@
             this.connectButton = new System.Windows.Forms.Button();
             this.filesGroup = new System.Windows.Forms.GroupBox();
             this.fileListView = new System.Windows.Forms.ListView();
-            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.pathHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.sizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.currentProgress = new System.Windows.Forms.ProgressBar();
@@ -195,7 +194,6 @@
             // 
             this.fileListView.AllowDrop = true;
             this.fileListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.statusHeader,
             this.pathHeader,
             this.sizeHeader});
             this.fileListView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -210,15 +208,10 @@
             this.fileListView.View = System.Windows.Forms.View.Details;
             this.fileListView.SelectedIndexChanged += new System.EventHandler(this.fileList_SelectedIndexChanged);
             // 
-            // statusHeader
-            // 
-            this.statusHeader.Text = "S";
-            this.statusHeader.Width = 25;
-            // 
             // pathHeader
             // 
             this.pathHeader.Text = "File";
-            this.pathHeader.Width = 461;
+            this.pathHeader.Width = 486;
             // 
             // sizeHeader
             // 
@@ -299,7 +292,6 @@
         private System.Windows.Forms.ProgressBar currentProgress;
         private System.Windows.Forms.GroupBox currentFileGroup;
         private System.Windows.Forms.GroupBox totalFilesGroup;
-        private System.Windows.Forms.ColumnHeader statusHeader;
         private System.Windows.Forms.ColumnHeader sizeHeader;
         private System.Windows.Forms.Panel sendReceivePanel;
         private System.Windows.Forms.RadioButton radioReceive;
