@@ -159,13 +159,19 @@ namespace MUFT
         private void SendFile(SimpleFileInfo fileInfo, BinaryWriter bw, BackgroundWorker bgw)
         {
             BinaryReader br = null;
+            FileStream fs = null;
             try
             {
+                string checksum = Utilities.CalculateMD5(fileInfo.Path);
+
+                fs = File.OpenRead(fileInfo.Path);
+                br = new BinaryReader(fs);
+
                 bw.Write(fileInfo.Size);
                 bw.Write(fileInfo.Name);
-                Console.WriteLine("Sending " + fileInfo.Name + ", " + fileInfo.Size);
+                bw.Write(checksum);
 
-                br = new BinaryReader(File.OpenRead(fileInfo.Path));
+                Console.WriteLine("Sending " + fileInfo.Name + ", " + fileInfo.Size);
 
                 long bytesSent = 0;
                 Byte[] bytes = new Byte[chunkSize]; // Buffer
@@ -197,24 +203,31 @@ namespace MUFT
             finally
             {
                 if (br != null)
-                {
                     br.Close();
-                }
+                if (fs != null)
+                    fs.Close();
+
             }
         }
 
         // Recieve a file from the socket
         private void RecvFile(string path, BinaryReader br, BackgroundWorker bgw)
         {
+            string fullPath = "", checksum = "", fileName = "";
             BinaryWriter bw = null;
+            FileStream fs = null;
+
             try
             {
                 long fileSize = br.ReadInt64();
-                string fileName = br.ReadString();
-                string fullPath = path + @"\" + fileName;
+                fileName = br.ReadString();
+                checksum = br.ReadString();
+
+                fullPath = path + @"\" + fileName;
                 Console.WriteLine("Receiving " + fileName + ", " + fileSize);
 
-                bw = new BinaryWriter(File.OpenWrite(fullPath));
+                fs = File.OpenWrite(fullPath);
+                bw = new BinaryWriter(fs);
 
                 long bytesReceived = 0;
                 long bytesLeft = fileSize;
@@ -240,7 +253,7 @@ namespace MUFT
                         SimpleFileInfo fileInfo = null;
                         if(!reportedFile)
                         {
-                            fileInfo = new SimpleFileInfo(fullPath, fileName, fileSize, 0);
+                            fileInfo = new SimpleFileInfo(fullPath, fileName, fileSize);
                             reportedFile = true;
                         }
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
@@ -256,10 +269,15 @@ namespace MUFT
             finally
             {
                 if (bw != null)
-                {
                     bw.Close();
-                }
+                if (fs != null)
+                    fs.Close();
             }
+
+            // Verify checksum
+            string recvChecksum = Utilities.CalculateMD5(fullPath);
+            if(checksum != recvChecksum)
+                new Thread(() => MessageBox.Show("Warning! Checksum of " + fileName + " did not match expected checksum.")).Start();
         }
 
         // Send meta data about the transfer
