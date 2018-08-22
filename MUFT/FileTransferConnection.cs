@@ -204,11 +204,8 @@ namespace MUFT
             FileStream fs = null;
             try
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
                 string checksum = Utilities.CalculateMD5(fileInfo.Path);
-                watch.Stop();
-                Console.WriteLine("Checksum calculation took {0}", watch.Elapsed); ;
-
+                
                 fs = File.OpenRead(fileInfo.Path);
                 br = new BinaryReader(fs);
 

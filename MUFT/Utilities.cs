@@ -47,11 +47,12 @@ namespace MUFT
 
         public static string CalculateMD5(string path)
         {
+            int bufferSize = 1024 * 1024;
             using (var md5 = MD5.Create())
             {
-                using (var fs = File.OpenRead(path))
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize))//File.OpenRead(path)
                 {
-                    return BitConverter.ToString(md5.ComputeHash(fs)).Replace("-","");
+                    return BitConverter.ToString(md5.ComputeHash(fs)).Replace("-", "");
                 }
             }
         }
