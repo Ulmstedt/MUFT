@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Net.Sockets;
 using System.Windows.Forms;
 
@@ -14,7 +15,7 @@ namespace MUFT
             this.port = port;
         }
 
-        public override void Connect()
+        public override void Connect(BackgroundWorker bgw)
         {
             try
             {

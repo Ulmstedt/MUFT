@@ -51,7 +51,7 @@ namespace MUFT
 
         System.Timers.Timer speedTimer;
 
-        abstract public void Connect();
+        abstract public void Connect(BackgroundWorker bgw);
 
         protected FileTransferConnection()
         {
@@ -69,14 +69,43 @@ namespace MUFT
         public void speedTimer_Tick(Object source, ElapsedEventArgs e)
         {
             CurrentSpeed = totalBytesTransfered - previousTotalBytesTransfered;
-            TimeRemaining = TimeSpan.FromSeconds((TotalSize - totalBytesTransfered) / CurrentSpeed);
+            if(CurrentSpeed != 0)
+                TimeRemaining = TimeSpan.FromSeconds((TotalSize - totalBytesTransfered) / CurrentSpeed);
             previousTotalBytesTransfered = totalBytesTransfered;
+        }
+
+        /*
+         * Recursively adds all files in path to the FileList to be transferred.
+         * @prefix prefix of the files name (makes sure that the received file is added to the correct folder)
+         */
+        private void AddFilesInDir(string path, string prefix)
+        {
+            try
+            {
+                foreach (string f in Directory.GetFiles(path))
+                {
+                    FileInfo fi = new FileInfo(f);
+                    SimpleFileInfo file = new SimpleFileInfo(fi.FullName, prefix + fi.Name, fi.Length, false);
+                    FileList.Add(file);
+                    NumFiles++;
+                }
+
+                foreach (string d in Directory.GetDirectories(path))
+                {
+                    string newPrefix = prefix + d.Split('\\').Last() + "\\";
+                    AddFilesInDir(d, newPrefix);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         // Send all files in fileList
         public void SendFiles(BackgroundWorker bgw)
         {
-            Connect();
+            Connect(bgw);
             if (connection == null)
                 return;
 
@@ -85,6 +114,17 @@ namespace MUFT
             {
                 totalBytesTransfered = 0;
                 bw = new BinaryWriter(connection.GetStream());
+
+                // Add files in directories
+                foreach (SimpleFileInfo fileInfo in FileList.ToList())
+                {
+                    if (fileInfo.IsDirectory)
+                    {
+                        AddFilesInDir(fileInfo.Path, "");
+                        FileList.Remove(fileInfo);
+                    }
+                }
+
                 if (!SendMetaData(bw))
                 {
                     MessageBox.Show("Failed to send meta data");
@@ -95,6 +135,7 @@ namespace MUFT
 
                 foreach (SimpleFileInfo fileInfo in FileList)
                 {
+                    if (bgw.CancellationPending) return;
                     SendFile(fileInfo, bw, bgw);
                 }
             }
@@ -117,7 +158,7 @@ namespace MUFT
         // Receive files according to numFiles and totalSize
         public void ReceiveFiles(string path, BackgroundWorker bgw)
         {
-            Connect();
+            Connect(bgw);
             if (connection == null)
                 return;
 
@@ -135,6 +176,7 @@ namespace MUFT
 
                 for (int i = 0; i < NumFiles; ++i)
                 {
+                    if (bgw.CancellationPending) return;
                     RecvFile(path, br, bgw);
                 }
             }
@@ -162,7 +204,10 @@ namespace MUFT
             FileStream fs = null;
             try
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 string checksum = Utilities.CalculateMD5(fileInfo.Path);
+                watch.Stop();
+                Console.WriteLine("Checksum calculation took {0}", watch.Elapsed); ;
 
                 fs = File.OpenRead(fileInfo.Path);
                 br = new BinaryReader(fs);
@@ -179,6 +224,8 @@ namespace MUFT
                 int lastReportedCurr = 0;
                 while (bytesSent < fileInfo.Size)
                 {
+                    if (bgw.CancellationPending) return;
+
                     int bytes_read = br.Read(bytes, 0, chunkSize);
                     bw.Write(bytes, 0, bytes_read);
 
@@ -224,6 +271,8 @@ namespace MUFT
                 checksum = br.ReadString();
 
                 fullPath = path + @"\" + fileName;
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+
                 Console.WriteLine("Receiving " + fileName + ", " + fileSize);
 
                 fs = File.OpenWrite(fullPath);
@@ -237,6 +286,14 @@ namespace MUFT
                 int lastReportedCurr = 0;
                 while (bytesLeft > 0)
                 {
+                    if (bgw.CancellationPending)
+                    {
+                        fs.Close();
+                        bw.Close();
+                        File.Delete(fullPath);
+                        return;
+                    }
+
                     int readSize = (int)(chunkSize < bytesLeft ? chunkSize : bytesLeft);
                     int bytes_read = br.Read(bytes, 0, readSize);
                     bw.Write(bytes, 0, bytes_read);
@@ -251,9 +308,9 @@ namespace MUFT
                     if (curr - lastReportedCurr > 1 || curr == 100) // Only update changes of 1% or more
                     {
                         SimpleFileInfo fileInfo = null;
-                        if(!reportedFile)
+                        if (!reportedFile)
                         {
-                            fileInfo = new SimpleFileInfo(fullPath, fileName, fileSize);
+                            fileInfo = new SimpleFileInfo(fullPath, fileName, fileSize, false);
                             reportedFile = true;
                         }
                         int total = (int)((float)totalBytesTransfered / TotalSize * 100);
@@ -276,7 +333,7 @@ namespace MUFT
 
             // Verify checksum
             string recvChecksum = Utilities.CalculateMD5(fullPath);
-            if(checksum != recvChecksum)
+            if (checksum != recvChecksum)
                 new Thread(() => MessageBox.Show("Warning! Checksum of " + fileName + " did not match expected checksum.")).Start();
         }
 
@@ -291,7 +348,7 @@ namespace MUFT
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show("SendMetaData: " + e.Message);
                 return false;
             }
         }

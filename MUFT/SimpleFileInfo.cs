@@ -4,6 +4,7 @@
     {
         public string Path { get; set; }
         public string Name { get; set; }
+        public bool IsDirectory { get; set; }
         private long size;
         public long Size
         {
@@ -19,11 +20,12 @@
         }
         public string SizeString { get; private set; }
 
-        public SimpleFileInfo(string path, string name, long size)
+        public SimpleFileInfo(string path, string name, long size, bool isDirectory)
         {
             this.Path = path;
             this.Name = name;
             this.Size = size;
+            this.IsDirectory = isDirectory;
         }
     }
 }

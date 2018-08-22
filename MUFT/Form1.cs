@@ -57,6 +57,9 @@ namespace MUFT
         private int numFiles = 0;
         private long totalSize = 0;
 
+        BackgroundWorker bgw;
+        bool working = false;
+
         ProgressBarWithText totalProgress;
 
         public MainForm()
@@ -122,6 +125,18 @@ namespace MUFT
 
         private void connectButton_Click(object sender, EventArgs e)
         {
+            if (!working)
+            {
+                startTransfer();
+            }
+            else
+            {
+                bgw.CancelAsync();
+            }
+        }
+
+        void startTransfer()
+        {
             string ip = IPTextBox.Text;
             int port;
             if (!Int32.TryParse(portTextBox.Text, out port))
@@ -147,8 +162,9 @@ namespace MUFT
 
             DisableForm();
 
-            BackgroundWorker bgw = new BackgroundWorker();
+            bgw = new BackgroundWorker();
             bgw.WorkerReportsProgress = true;
+            bgw.WorkerSupportsCancellation = true;
             bgw.ProgressChanged += bgw_ProgressChanged;
             bgw.DoWork += bgw_TransferFiles;
             bgw.RunWorkerCompleted += bgw_TransferComplete;
@@ -240,23 +256,27 @@ namespace MUFT
         // Disables most components of the form (for when transfering files)
         void DisableForm()
         {
+            working = true;
             fileListView.Enabled = false;
             IPTextBox.Enabled = false;
             portTextBox.Enabled = false;
             clientServerPanel.Enabled = false;
             sendReceivePanel.Enabled = false;
-            connectButton.Enabled = false;
+            connectButton.Text = "Cancel";
+            //connectButton.Enabled = false;
         }
 
         // Re-enables the form
         void EnableForm()
         {
+            working = false;
             fileListView.Enabled = true;
             IPTextBox.Enabled = true;
             portTextBox.Enabled = true;
             clientServerPanel.Enabled = true;
             sendReceivePanel.Enabled = true;
-            connectButton.Enabled = true;
+            connectButton.Text = "Connect";
+            //connectButton.Enabled = true;
         }
 
         #region File listView
@@ -280,19 +300,70 @@ namespace MUFT
                 string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach (string path in filePaths)
                 {
-                    // Get file info
-                    FileInfo fi = new FileInfo(path);
-
-                    // Create File and add to file list
-                    SimpleFileInfo file = new SimpleFileInfo(fi.FullName, fi.Name, fi.Length);
-                    fileList.Add(file);
-                    numFiles++;
-                    totalSize += file.Size;
-
-                    UpdateTotalSize();
-                    AddListViewItem(file.Path, file.SizeString);
+                    addFile(path);
                 }
             }
+        }
+
+        private void addFile(string path)
+        {
+            // Get file info
+            FileInfo fi = new FileInfo(path);
+
+            // Get file attributes
+            FileAttributes attr = fi.Attributes;
+            bool isDirectory = attr.HasFlag(FileAttributes.Directory);
+
+            if (!isDirectory)
+            {
+                // Create File and add to file list
+                SimpleFileInfo file = new SimpleFileInfo(fi.FullName, fi.Name, fi.Length, isDirectory);
+                fileList.Add(file);
+                numFiles++;
+                totalSize += file.Size;
+
+                UpdateTotalSize();
+                AddListViewItem(file.Path, file.SizeString);
+            }
+            else
+            {
+                // Create File and add to file list
+                long accSize = getDirSize(path);
+                SimpleFileInfo file = new SimpleFileInfo(fi.FullName, "", accSize, isDirectory);
+                fileList.Add(file);
+                totalSize += accSize;
+
+                UpdateTotalSize();
+                AddListViewItem(path, Utilities.SizeToString(accSize));
+            }
+        }
+
+        /*
+         * Recursively calculates the size of a directory.
+         */
+        private long getDirSize(string path)
+        {
+            long totalSize = 0;
+
+            try
+            {
+                foreach (string f in Directory.GetFiles(path))
+                {
+                    FileInfo fi = new FileInfo(f);
+                    totalSize += fi.Length;
+                }
+
+                foreach (string d in Directory.GetDirectories(path))
+                {
+                    totalSize += getDirSize(d);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return totalSize;
         }
 
         private void fileListView_KeyDown(object sender, KeyEventArgs e)
